@@ -1,0 +1,6 @@
+numpy
+opencv-python         # For cv2 image functions
+scikit-learn        # For PCA, train_test_split, evaluation metrics
+matplotlib          # For plotting
+seaborn             # For nicer confusion matrix plots
+# scikit-image        # Add if you decide to use HOG features
