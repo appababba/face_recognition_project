@@ -1,4 +1,4 @@
-# CSci 158 Face Recognition Project - Spring 2025
+# CSCI 158 Face Recognition Project - Spring 2025
 
 This is our group project for CSci 158, where we built a face recognition system for identifying people.
 
