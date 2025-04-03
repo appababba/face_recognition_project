@@ -40,7 +40,7 @@ The main script (`main.py`) orchestrates the whole process:
 ## Getting the Data
 
 * The code expects image data in the `data/` directory.
-* We primarily tested with the **AT&T Database of Faces (ORL Database)**. You can usually find this by searching online (e.g., [Cambridge link](https://cam-orl.co.uk/facedatabase.html)).
+* We primarily tested with the **AT&T Database of Faces (ORL Database)**. You can find this online at [https://www.kaggle.com/datasets/kasikrit/att-database-of-faces?resource=download].
 * Download and unzip the dataset.
 * Create a folder inside `data/` (e.g., `data/att_faces/` or `data/archive/`).
 * Place the subject folders (`s1`, `s2`, `s3`, etc.) directly inside the folder you created. The structure should look like `data/your_dataset_name/subject_folder/image_file.pgm`.
