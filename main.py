@@ -11,15 +11,13 @@ import classifiers
 import evaluation
 
 # --- Configuration ---
-DATASET_PATH = './data/cmu_face_images' # ADJUST AS NEEDED
-# DATASET_PATH = './data/some_kaggle_dataset' # ADJUST AS NEEDED
+DATASET_PATH = './data/archive/' # ADJUST AS NEEDED
 TEST_SIZE = 0.25 # Fraction of data for testing
 RANDOM_STATE = 42 # For reproducibility
 IMAGE_TARGET_SIZE = (64, 64)
 
 # Feature Extraction Choice
-# Options: 'raw', 'pca' # Add 'hog' if implemented
-FEATURE_EXTRACTION_METHOD = 'pca'
+FEATURE_EXTRACTION_METHOD = 'pca' # Options: 'raw', 'pca'
 N_PCA_COMPONENTS = 100 # Relevant if method is 'pca'
 
 # Classifier K parameter
@@ -30,13 +28,13 @@ if __name__ == "__main__":
     # 1. Load Data
     print("--- Loading Data ---")
     images, labels, label_map = data_loader.load_images(DATASET_PATH)
-    class_names = [label_map[i] for i in sorted(label_map.keys())] # Get class names in order
+    # Ensure class_names are sorted consistently corresponding to labels 0, 1, 2...
+    class_names = [label_map[i] for i in sorted(label_map.keys())]
 
     # 2. Preprocess Data (Resize, Grayscale, Flatten)
     print("\n--- Preprocessing Data ---")
-    # If using HOG, you might need a separate preprocessing step before HOG extraction
     processed_data = preprocessing.preprocess_images(images, target_size=IMAGE_TARGET_SIZE)
-    print(f"Preprocessed data shape: {processed_data.shape}") # (n_samples, n_features_flattened)
+    print(f"Preprocessed data shape: {processed_data.shape}")
 
     # 3. Split Data into Training and Testing Sets
     print("\n--- Splitting Data ---")
@@ -50,21 +48,16 @@ if __name__ == "__main__":
     print("\n--- Scaling Features ---")
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test) # Use the same scaler fitted on train data
+    X_test_scaled = scaler.transform(X_test)
 
-    # 5. Feature Extraction (Optional, e.g., PCA) - Fit only on training data!
+    # 5. Feature Extraction (e.g., PCA) - Fit only on training data!
     print(f"\n--- Applying Feature Extraction ({FEATURE_EXTRACTION_METHOD}) ---")
     if FEATURE_EXTRACTION_METHOD == 'pca':
+        # Note: Consider performance without whiten=True if GNB issues persist
         pca = PCA(n_components=N_PCA_COMPONENTS, random_state=RANDOM_STATE, svd_solver='randomized', whiten=True)
         X_train_final = pca.fit_transform(X_train_scaled)
         X_test_final = pca.transform(X_test_scaled)
         print(f"PCA applied. Data shape: {X_train_final.shape}")
-    # elif FEATURE_EXTRACTION_METHOD == 'hog':
-        # Need to apply HOG *before* split/scaling potentially, or adjust logic here
-        # X_train_final = extract_hog_features(X_train_images...) # Requires access to images before flattening/scaling
-        # X_test_final = extract_hog_features(X_test_images...)
-        # print(f"HOG features extracted. Data shape: {X_train_final.shape}")
-        # pass # Placeholder
     elif FEATURE_EXTRACTION_METHOD == 'raw':
         X_train_final = X_train_scaled # Use scaled raw pixels
         X_test_final = X_test_scaled
@@ -73,13 +66,9 @@ if __name__ == "__main__":
         raise ValueError(f"Unknown feature extraction method: {FEATURE_EXTRACTION_METHOD}")
 
     # --- Train and Evaluate Classifiers ---
-
     classifiers_to_run = {
         "KNN (Scratch)": classifiers.KNNClassifier(k=KNN_K),
         "GaussianNB (Scratch)": classifiers.GaussianNBClassifier()
-        # Add sklearn versions for comparison if needed:
-        # "KNN (Sklearn)": KNeighborsClassifier(n_neighbors=KNN_K),
-        # "GaussianNB (Sklearn)": GaussianNB()
     }
 
     results = {}
@@ -95,25 +84,28 @@ if __name__ == "__main__":
         acc = evaluation.calculate_accuracy(y_test, y_pred)
         print(f"Accuracy: {acc:.4f}")
 
-        # Plot Confusion Matrix
+        # Plot Confusion Matrix (pass name)
         print("Plotting Confusion Matrix...")
-        evaluation.plot_confusion_matrix(y_test, y_pred, class_names=class_names)
+        # Pass sorted unique labels from y_test/y_train to ensure correct mapping
+        unique_labels_sorted = sorted(np.unique(np.concatenate((y_train, y_test))))
+        cm_class_names = [label_map[i] for i in unique_labels_sorted] # Ensure names match used labels
+        evaluation.plot_confusion_matrix(y_test, y_pred, class_names=cm_class_names, name=name)
 
-        # Plot ROC Curves (Requires predict_proba)
+        # Plot ROC Curves (pass name)
         if hasattr(clf, 'predict_proba'):
             try:
                 print("Calculating scores for ROC...")
-                # Note: Naive Bayes might return log_proba, kNN simple proba
-                # Ensure scores are suitable for roc_curve function (probabilities of positive class for OvR)
                 y_scores = clf.predict_proba(X_test_final)
                 print("Plotting ROC Curves (OvR)...")
-                evaluation.plot_roc_curves_ovr(y_test, y_scores, class_labels=sorted(label_map.keys()))
+                # Pass sorted unique labels consistent with training classes for proper mapping
+                roc_class_labels = sorted(label_map.keys())
+                evaluation.plot_roc_curves_ovr(y_test, y_scores, class_labels=roc_class_labels, name=name)
             except Exception as e:
                 print(f"Could not plot ROC curve for {name}: {e}")
         else:
              print(f"ROC curve plotting not available for {name} (needs predict_proba).")
 
-        results[name] = {'accuracy': acc, 'predictions': y_pred} # Store results if needed
+        results[name] = {'accuracy': acc, 'predictions': y_pred}
 
     # --- Compare Results ---
     print("\n--- Final Results Summary ---")

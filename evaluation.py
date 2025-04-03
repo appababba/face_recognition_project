@@ -8,40 +8,67 @@ def calculate_accuracy(y_true, y_pred):
     """Calculates classification accuracy."""
     return accuracy_score(y_true, y_pred)
 
-def plot_confusion_matrix(y_true, y_pred, class_names):
-    """Plots a confusion matrix using seaborn."""
-    cm = confusion_matrix(y_true, y_pred)
-    plt.figure(figsize=(10, 8))
+def plot_confusion_matrix(y_true, y_pred, class_names, name=""):
+    """Plots a confusion matrix using seaborn and saves it."""
+    cm = confusion_matrix(y_true, y_pred, labels=sorted(np.unique(y_true))) # Ensure labels match class_names order
+    # Ensure class_names corresponds correctly if not all classes appear in y_true/y_pred
+    tick_labels = class_names
+    if len(class_names) != cm.shape[0]:
+         print(f"Warning: Number of class names ({len(class_names)}) does not match confusion matrix size ({cm.shape[0]}). Using numeric labels.")
+         tick_labels = sorted(np.unique(y_true))
+
+    plt.figure(figsize=(12, 10)) # Adjusted size slightly
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
-                xticklabels=class_names, yticklabels=class_names)
+                xticklabels=tick_labels, yticklabels=tick_labels)
     plt.xlabel('Predicted Label')
     plt.ylabel('True Label')
-    plt.title('Confusion Matrix')
-    plt.show() # Or save figure
+    plt.title(f'Confusion Matrix - {name}')
+    plt.tight_layout() # Adjust layout
+    plt.savefig(f'confusion_matrix_{name}.png', dpi=150) # Save the plot, increase dpi
+    plt.close() # Close the plot object
 
-def plot_roc_curves_ovr(y_true, y_scores, class_labels):
+def plot_roc_curves_ovr(y_true, y_scores, class_labels, name=""):
     """
-    Plots ROC curves for each class using One-vs-Rest (OvR) strategy.
+    Plots ROC curves for each class using One-vs-Rest (OvR) strategy and saves it.
 
     Args:
         y_true (array): True labels (integers).
-        y_scores (array): Target scores. Can either be probability estimates
-                          of the positive class, confidence values, or binary decisions.
-                          Shape (n_samples, n_classes).
-        class_labels (list/array): Unique class labels corresponding to columns in y_scores.
+        y_scores (array): Target scores. Shape (n_samples, n_classes).
+                          Expects probabilities or log-probabilities.
+        class_labels (list/array): Unique class labels corresponding to columns in y_scores, sorted.
+        name (str): Name of the classifier for the title/filename.
     """
     n_classes = len(class_labels)
-    # Binarize the true labels for OvR
+    # Binarize the true labels for OvR using the sorted class labels
     y_true_binarized = label_binarize(y_true, classes=class_labels)
 
-    # Check if y_true_binarized is 1D (only 2 classes)
-    if n_classes == 2 and y_true_binarized.ndim == 1:
-        y_true_binarized = np.column_stack((1 - y_true_binarized, y_true_binarized))
-        # Ensure y_scores also handles the 2-class case appropriately
-        if y_scores.ndim == 1:
-             y_scores = np.column_stack((1 - y_scores, y_scores)) # Assuming scores are for positive class
-        elif y_scores.shape[1] == 1:
-             y_scores = np.column_stack((1 - y_scores[:,0], y_scores[:,0]))
+    # Check for edge case: only one class present in y_true after split
+    if y_true_binarized.shape[1] == 1 and n_classes > 1:
+        print(f"Warning: Only one class present in y_true for ROC calculation. ROC is undefined.")
+        # Optionally create a dummy plot or just return
+        # Create a simple plot indicating issue
+        plt.figure(figsize=(10, 8))
+        plt.plot([0, 1], [0, 1], 'k--', lw=2)
+        plt.text(0.5, 0.5, 'ROC undefined (only one class in y_true)', ha='center', va='center', fontsize=12)
+        plt.xlabel('False Positive Rate (FPR)')
+        plt.ylabel('True Positive Rate (TPR)')
+        plt.title(f'ROC Curve (Undefined) - {name}')
+        plt.savefig(f'roc_curve_{name}_undefined.png')
+        plt.close()
+        return # Exit the function
+
+
+    # Ensure scores are probabilities (convert log-probs if necessary)
+    # Simple check: if max score is <= 0 and min score can be -inf, assume log-probs
+    if np.max(y_scores) <= 0 and np.isneginf(np.min(y_scores)):
+        print("Detected log-probabilities, converting to probabilities for ROC.")
+        # Shift to avoid exp(-inf) -> 0; exp(large_neg) -> 0
+        # Subtract max log-prob per sample for numerical stability before exp
+        max_log_scores = np.max(y_scores, axis=1, keepdims=True)
+        exp_scores = np.exp(y_scores - max_log_scores)
+        # Normalize to get probabilities
+        sum_exp_scores = np.sum(exp_scores, axis=1, keepdims=True)
+        y_scores = np.divide(exp_scores, sum_exp_scores, out=np.full_like(exp_scores, 1.0/n_classes), where=sum_exp_scores!=0)
 
 
     fpr = dict()
@@ -51,37 +78,49 @@ def plot_roc_curves_ovr(y_true, y_scores, class_labels):
     plt.figure(figsize=(10, 8))
 
     for i in range(n_classes):
-        # Ensure we are accessing the correct column for scores corresponding to class i
-        # Naive Bayes might output log probabilities, kNN simple probabilities
-        # Ensure scores are probability of the positive class for OvR
-        # This might need adjustment based on how predict_proba is implemented
-        scores_for_class_i = y_scores[:, i]
+        class_idx_label = class_labels[i] # The actual label value
+        # Check if this class exists in y_true to avoid errors with binarized shape
+        if class_idx_label not in np.unique(y_true):
+             print(f"Skipping ROC for class {class_idx_label} - not present in y_true.")
+             continue
+        # Get the index corresponding to this class in the binarized array
+        # This handles cases where classes might be missing from y_true after split
+        try:
+            true_column_idx = list(class_labels).index(class_idx_label)
+            if true_column_idx >= y_true_binarized.shape[1]:
+                 # This case might happen if label_binarize drops classes not in y_true
+                 # Re-binarize here using only classes present in y_true if necessary
+                 print(f"Warning: Index mismatch for class {class_idx_label}. Re-checking binarization.")
+                 present_classes = sorted(np.unique(y_true))
+                 y_true_binarized_local = label_binarize(y_true, classes=present_classes)
+                 true_column_idx = list(present_classes).index(class_idx_label)
+                 target_y_true = y_true_binarized_local[:, true_column_idx]
+            else:
+                 target_y_true = y_true_binarized[:, true_column_idx]
 
-        fpr[i], tpr[i], _ = roc_curve(y_true_binarized[:, i], scores_for_class_i)
-        roc_auc[i] = auc(fpr[i], tpr[i])
-        plt.plot(fpr[i], tpr[i], lw=2,
-                 label=f'ROC curve of class {class_labels[i]} (area = {roc_auc[i]:0.2f})')
+            target_y_score = y_scores[:, i] # Scores column corresponds to sorted class_labels
+
+            fpr[i], tpr[i], _ = roc_curve(target_y_true, target_y_score)
+            roc_auc[i] = auc(fpr[i], tpr[i])
+            plt.plot(fpr[i], tpr[i], lw=2,
+                     label=f'ROC curve of class {class_labels[i]} (area = {roc_auc[i]:0.2f})')
+        except ValueError as e:
+            print(f"Could not calculate ROC for class {class_labels[i]}: {e}. Skipping.")
+            continue
+        except IndexError as e:
+             print(f"IndexError calculating ROC for class {class_labels[i]}: {e}. Skipping. "
+                   f"(Num classes: {n_classes}, Binarized shape: {y_true_binarized.shape}, Scores shape: {y_scores.shape})")
+             continue
+
 
     plt.plot([0, 1], [0, 1], 'k--', lw=2) # Dashed diagonal
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
     plt.xlabel('False Positive Rate (FPR)')
     plt.ylabel('True Positive Rate (TPR)')
-    plt.title('Receiver Operating Characteristic (ROC) - One-vs-Rest')
+    plt.title(f'Receiver Operating Characteristic (ROC) - One-vs-Rest - {name}')
     plt.legend(loc="lower right")
     plt.grid(True)
-    plt.show() # Or save figure
-
-# --- FMR/FNMR Calculation (More complex for multi-class ID) ---
-# This requires defining "genuine" vs "impostor" attempts based on scores.
-# It's often easier to calculate from the ROC curve points (FPR = FMR, FNR = 1-TPR = FNMR)
-# Example: Find TPR at a specific desired FPR (FMR)
-def find_tpr_at_fpr(fpr_array, tpr_array, desired_fpr):
-     """Finds the TPR corresponding to the closest FPR <= desired_fpr."""
-     if desired_fpr < fpr_array[0]: return 0.0 # Handle edge case
-     # Find the index of the FPR value just below or equal to the desired FPR
-     idx = np.where(fpr_array <= desired_fpr)[0][-1]
-     return tpr_array[idx]
-
-# You would call this inside a loop for each class's ROC curve points from plot_roc_curves_ovr
-# print(f"Class {label}: At FMR (FPR) <= {desired_fpr:.4f}, TPR is {tpr:.4f} (FNMR = {1-tpr:.4f})")
+    plt.tight_layout() # Adjust layout
+    plt.savefig(f'roc_curve_{name}.png', dpi=150) # Save the plot
+    plt.close() # Close the plot object
