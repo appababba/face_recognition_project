@@ -6,7 +6,7 @@ This is our group project for CSci 158, where we built a face recognition system
 
 ## Goal
 
-The main goal was to implement a couple of classification algorithms **from scratch** (as required by the assignment!) and see how well they work for face identification on a standard dataset. We chose to implement:
+The main goal was to implement a couple of classification algorithms **from scratch** and see how well they work for face identification on a standard dataset. We chose to implement:
 
 1.  **K-Nearest Neighbors (KNN)**
 2.  **Gaussian Naive Bayes (GNB)**
