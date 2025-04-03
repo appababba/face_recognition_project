@@ -2,7 +2,7 @@
 
 This is our group project for CSci 158, where we built a face recognition system for identifying people.
 
-**Team:** Rory Cameron, James Lin, Robert Cameron
+**Team:** James Lin, Robert Cameron
 
 ## Goal
 
