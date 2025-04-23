@@ -29,7 +29,7 @@ The main script (`main.py`):
     * Creation: `python3 -m venv .venv`
     * Activation:
         * macOS/Linux: `source .venv/bin/activate`
-        * Windows: `.venv\Scripts\activate`
+        * Windows: `..\.venv\Scripts\activate`
 2.  **Install Libraries:** Once the environment is active, install the necessary libraries:
     ```bash
     pip install -r requirements.txt
