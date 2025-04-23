@@ -114,7 +114,7 @@ class GaussianNBClassifier:
             if X_c.shape[0] == 0: # Handle case where a class might not be in train split
                 continue
             self._mean[idx, :] = X_c.mean(axis=0)
-            # Add epsilon for numerical stability DURING VARIANCE CALCULATION
+            # Add epsilon for numerical stability during variance calculation
             self._var[idx, :] = X_c.var(axis=0) + self.variance_epsilon
             self._priors[idx] = X_c.shape[0] / float(n_samples)
         print(f"GaussianNB fitted with {n_samples} training samples across {n_classes} classes.")
@@ -132,16 +132,16 @@ class GaussianNBClassifier:
         """Predicts the label for a single test sample."""
         posteriors = []
 
-        # Calculate posterior probability for each class
+        # calculate posterior probability for each class
         for idx, c in enumerate(self._classes):
-            # Handle case where class might have had no training samples
+            # handle case where class might have had no training samples
             if self._priors[idx] == 0:
-                 posteriors.append(-np.inf) # Assign very low probability
+                 posteriors.append(-np.inf) # assign very low probability
                  continue
 
-            prior = np.log(self._priors[idx]) # Use log probabilities for numerical stability
+            prior = np.log(self._priors[idx]) # use log probabilities for numerical stability
 
-            # Calculate PDF values
+            # Calculate pdf values
             pdf_values = self._pdf(idx, x_test)
             # Clip values to prevent log(0) using log_epsilon
             safe_pdf_values = np.maximum(pdf_values, self.log_epsilon)
@@ -164,14 +164,12 @@ class GaussianNBClassifier:
     def _pdf(self, class_idx, x):
         """Calculates Gaussian Probability Density Function."""
         mean = self._mean[class_idx]
-        var = self._var[class_idx] # Already includes variance_epsilon
-        # Handle potential zero variance again just in case (though epsilon should prevent it)
+        var = self._var[class_idx] # already includes variance_epsilon
+        # handle potential zero variance again just in case
         var = np.maximum(var, 1e-15) # Safety net
         numerator = np.exp(-((x - mean) ** 2) / (2 * var))
         denominator = np.sqrt(2 * np.pi * var)
-        # Avoid division by zero in denominator
-        # This is less likely now due to epsilon in variance, but good practice
-        # If denominator is near zero, pdf is near zero anyway unless numerator is also zero
+        # avoid division by zero in denominator
         pdf = np.divide(numerator, denominator, out=np.zeros_like(numerator), where=denominator!=0)
         return pdf
 
@@ -185,18 +183,18 @@ class GaussianNBClassifier:
         for x in X_test:
             posteriors = []
             for idx, c in enumerate(self._classes):
-                # Handle case where class might have had no training samples
+                # handle case where class might have had no training samples
                 if self._priors[idx] == 0:
-                     posteriors.append(-np.inf) # Assign very low probability
+                     posteriors.append(-np.inf) # assign very low probability
                      continue
 
                 prior = np.log(self._priors[idx])
 
-                # Calculate PDF values
+                # calculate pdf values
                 pdf_values = self._pdf(idx, x)
-                # Clip values to prevent log(0) using log_epsilon
+                # clip values to prevent log(0) using log_epsilon
                 safe_pdf_values = np.maximum(pdf_values, self.log_epsilon)
-                # Calculate log likelihood
+                # calculate log likelihood
                 likelihood = np.sum(np.log(safe_pdf_values))
 
                 posterior = prior + likelihood
