@@ -28,7 +28,7 @@ The main script (`main.py`):
 1.  **Virtual Environment:** You should use a virtual environment. 
     * Creation: `python3 -m venv .venv`
     * Activation:
-        * macOS/Linux: `source .venv/bin/activate`
+        * macOS/Linux: `source .venv/bin/activate.ps1`
         * Windows: `..\.venv\Scripts\activate`
 2.  **Install Libraries:** Once the environment is active, install the necessary libraries:
     ```bash
