@@ -70,6 +70,5 @@ It will also save the following plots as PNG files in the main project directory
 ## Notes / Challenges
 
 * We implemented the classifiers from scratch, and used libraries like `scikit-learn` for helpful things like PCA, train/test split, scaling, and some evaluation metrics (like generating the confusion matrix values and ROC points).
-* Getting the plots to work without hanging was atricky, we ended up modifying the evaluation code to save plots directly to files (`plt.savefig`) instead of trying to display them interactively (`plt.show`).
 
 ---
