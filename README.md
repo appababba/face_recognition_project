@@ -15,42 +15,41 @@ We compare their performance using metrics like accuracy, confusion matrices, an
 
 ## What The Code Does
 
-The main script (`main.py`) orchestrates the whole process:
+The main script (`main.py`):
 
-1.  **Loads Data:** Reads face images and labels from a specified dataset directory (`data_loader.py`). Assumes images are organized into subfolders for each person.
-2.  **Preprocesses Images:** Resizes images to a standard size, converts them to grayscale, and flattens them into feature vectors (`preprocessing.py`).
-3.  **Extracts Features:** Currently set up to use **PCA** for dimensionality reduction (using scikit-learn) or just use the **raw** (scaled) pixel values.
-4.  **Trains Classifiers:** Trains the KNN and GNB classifiers implemented from scratch in `classifiers.py`.
-5.  **Evaluates:** Tests the classifiers on a held-out test set, calculates accuracy, and generates confusion matrix and ROC curve plots (`evaluation.py`), saving them as PNG files.
+1.  **Loads Data:** Reads face images and labels from (`data_loader.py`). Images are organized into subfolders for each person.
+2.  **Preprocesses Images:** Resizes images to a standard size, converts them to grayscale, and flattens them into feature vectors.
+3.  **Extracts Features:** Currently set up to use **PCA** for dimensionality reduction or just use the scaled (scaled) pixel values.
+4.  **Trains Classifiers:** Trains the KNN and GNB classifiers implemented in `classifiers.py`.
+5.  **Evaluates:** Tests the classifiers on a held-out test set, calculates accuracy, and generates confusion matrix and ROC curve plots (`evaluation.py`), and saves them as PNG files.
 
 ## Setup Instructions
 
-1.  **Python:** You'll need Python 3 (we developed using Python 3.13, but slightly older versions should work).
-2.  **Virtual Environment (Recommended):** It's best practice to use a virtual environment to keep dependencies clean.
-    * Create it: `python3 -m venv .venv`
-    * Activate it:
+1.  **Virtual Environment:** You should use a virtual environment. 
+    * Creation: `python3 -m venv .venv`
+    * Activation:
         * macOS/Linux: `source .venv/bin/activate`
         * Windows: `.venv\Scripts\activate`
-3.  **Install Libraries:** Once the environment is active, install the necessary libraries:
+2.  **Install Libraries:** Once the environment is active, install the necessary libraries:
     ```bash
     pip install -r requirements.txt
     ```
-    (This installs `numpy`, `opencv-python`, `scikit-learn`, `matplotlib`, `seaborn`).
+    This installs `numpy`, `opencv-python`, `scikit-learn`, `matplotlib`, `seaborn`.
 
 ## Getting the Data
 
 * The code expects image data in the `data/` directory.
-* We primarily tested with the **AT&T Database of Faces (ORL Database)**. You can find this online at [https://www.kaggle.com/datasets/kasikrit/att-database-of-faces?resource=download].
+* We tested with the **AT&T Database of Faces (ORL Database)**. You can find this online at [https://www.kaggle.com/datasets/kasikrit/att-database-of-faces?resource=download].
 * Download and unzip the dataset.
-* Create a folder inside `data/` (e.g., `data/att_faces/` or `data/archive/`).
-* Place the subject folders (`s1`, `s2`, `s3`, etc.) directly inside the folder you created. The structure should look like `data/your_dataset_name/subject_folder/image_file.pgm`.
+* Create a folder inside `data/` 
+* Place the subject folders  directly inside the folder. The path will look like `data/dataset_name/subject_folder/image_file.pgm`.
 
 ## How to Run
 
-1.  **Activate Environment:** Make sure your virtual environment is active (you should see `(.venv)` in your terminal prompt).
+1.  **Activate Environment:** Make sure the virtual environment is active (the terminal will say `(.venv)`)
 2.  **Configure `main.py`:**
     * Open `main.py`.
-    * **Set `DATASET_PATH`** to the correct path relative to `main.py` where your subject folders (`s1`, `s2`, etc.) are located (e.g., `DATASET_PATH = './data/att_faces/'`).
+    * **Set `DATASET_PATH`** to the correct path relative to `main.py` where (`s1`, `s2`...) are.
     * You can also change `FEATURE_EXTRACTION_METHOD` (set to `'pca'` or `'raw'`), `N_PCA_COMPONENTS` (if using PCA), and `KNN_K` for experiments.
 3.  **Run from Terminal:**
     ```bash
