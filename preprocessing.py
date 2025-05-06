@@ -7,7 +7,7 @@ preprocess list of images, returns 2d numpy array where each row is flattened im
 
     """
     processed_images = []
-    for img in images: # Skip any failed loads
+    for img in images: # skip any failed loads
         if img is None:
             continue 
 
