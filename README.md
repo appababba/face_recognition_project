@@ -6,12 +6,12 @@ This is our group project for CSci 158, where we built a face recognition system
 
 ## Goal
 
-The main goal was to implement a couple of classification algorithms **from scratch** and see how well they work for face identification on a standard dataset. We chose to implement:
+The main goal was to implement a couple of classification algorithms from scratch and see how well they work for face identification on a standard dataset. We chose to implement:
 
 1.  **K-Nearest Neighbors (KNN)**
 2.  **Gaussian Naive Bayes (GNB)**
 
-We compare their performance using metrics like accuracy, confusion matrices, and ROC curves.
+We compared their performance using metrics like accuracy, confusion matrices, and ROC curves.
 
 ## What The Code Does
 
@@ -61,7 +61,7 @@ The main script (`main.py`):
 
 The script will print progress messages and the final accuracy scores for KNN and GaussianNB to the terminal.
 
-It will also save the following plots as PNG files in the main project directory:
+It will also save these plots as PNG files in the main project directory:
 
 * `confusion_matrix_KNN (Scratch).png`
 * `confusion_matrix_GaussianNB (Scratch).png`
