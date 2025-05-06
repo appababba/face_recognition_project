@@ -19,7 +19,7 @@ The main script (`main.py`):
 
 1.  **Loads Data:** Reads face images and labels from (`data_loader.py`). Images are organized into subfolders for each person.
 2.  **Preprocesses Images:** Resizes images to a standard size, converts them to grayscale, and flattens them into feature vectors.
-3.  **Extracts Features:** Currently set up to use **PCA** for dimensionality reduction or just use the scaled (scaled) pixel values.
+3.  **Extracts Features:** Currently set up to use PCA for dimensionality reduction or just use the scaled (scaled) pixel values.
 4.  **Trains Classifiers:** Trains the KNN and GNB classifiers implemented in `classifiers.py`.
 5.  **Evaluates:** Tests the classifiers on a held-out test set, calculates accuracy, and generates confusion matrix and ROC curve plots (`evaluation.py`), and saves them as PNG files.
 
@@ -43,7 +43,7 @@ The main script (`main.py`):
 * We tested with the **AT&T Database of Faces (ORL Database)**. You can find this online at [https://www.kaggle.com/datasets/kasikrit/att-database-of-faces?resource=download].
 * Download and unzip the dataset.
 * Create a folder inside `data/` 
-* Place the subject folders  directly inside the folder. The path will look like `data/dataset_name/subject_folder/image_file.pgm`.
+* Place the folders  directly inside the folder. The path will look like `data/dataset_name/subject_folder/image_file.pgm`.
 
 ## How to Run
 
