@@ -60,16 +60,3 @@ The main script (`main.py`):
 ## Output
 
 The script will print progress messages and the final accuracy scores for KNN and GaussianNB to the terminal.
-
-It will also save these plots as PNG files in the main project directory:
-
-* `confusion_matrix_KNN (Scratch).png`
-* `confusion_matrix_GaussianNB (Scratch).png`
-* `roc_curve_KNN (Scratch).png`
-* `roc_curve_GaussianNB (Scratch).png`
-
-## Notes / Challenges
-
-* We implemented the classifiers from scratch, and used libraries like `scikit-learn` for helpful things like PCA, train/test split, scaling, and some evaluation metrics (like generating the confusion matrix values and ROC points).
-
----
