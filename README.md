@@ -30,7 +30,7 @@ The main script (`main.py`):
     * Activation:
         * macOS/Linux: `source .venv/bin/activate`
         * Windows: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force`,
-`..\.venv\Scripts\activate.ps1`
+`.\.venv\Scripts\Activate.ps1`
 2.  **Install Libraries:** Once the environment is active, install the necessary libraries:
     ```bash
     pip install -r requirements.txt
